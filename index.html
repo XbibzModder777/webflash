@@ -911,7 +911,7 @@
                             await writer.write(chunk);
                             
                             // Update progress
-                            const progress = Math.round(((i + 1) / totalChunks * 100);
+                            const progress = Math.round(((i + 1) / totalChunks * 100));
                             progressBar.style.width = `${progress}%`;
                             progressText.textContent = `${progress}%`;
                             
