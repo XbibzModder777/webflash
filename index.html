@@ -926,7 +926,7 @@
                 
                 // Perbarui UI dengan info perangkat
                 chipTypeInfo.textContent = chip.toUpperCase();
-                macAddress.textContent = mac.map(b => b.toString(16).padStart(2, '0').join(':');
+                macAddress.textContent = mac.map(b => b.toString(16).padStart(2, '0')).join(':');
                 flashSize.textContent = `${flashInfo.size / 1024} KB`;
                 firmwareInfo.textContent = 'Tidak diketahui';
                 
