@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firmware Uploader</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4a6bff;
+            --primary-dark: #3a56cc;
+            --text: #333;
+            --text-light: #666;
+            --bg: #f5f7ff;
+            --card-bg: #fff;
+            --border: #e0e5ff;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --log-bg: #f8f9fa;
+            --log-text: #212529;
+        }
+
+        .dark-mode {
+            --primary: #6c8aff;
+            --primary-dark: #5a75e6;
+            --text: #f0f0f0;
+            --text-light: #b0b0b0;
+            --bg: #000;
+            --card-bg: #111;
+            --border: #333;
+            --success: #34ce57;
+            --warning: #ffd43b;
+            --danger: #ff6b6b;
+            --info: #3dd5f3;
+            --log-bg: #121212;
+            --log-text: #e0e0e0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: var(--card-bg);
+            color: var(--text);
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 107, 255, 0.2);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .progress-container {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .device-info {
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .info-item {
+            background-color: rgba(74, 107, 255, 0.1);
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 0.3rem;
+        }
+
+        .info-value {
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .log-container {
+            background-color: var(--log-bg);
+            border-radius: 10px;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: var(--log-text);
+            border: 1px solid var(--border);
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .log-time {
+            color: var(--text-light);
+            margin-right: 0.5rem;
+        }
+
+        .log-info {
+            color: var(--info);
+        }
+
+        .log-success {
+            color: var(--success);
+        }
+
+        .log-warning {
+            color: var(--warning);
+        }
+
+        .log-error {
+            color: var(--danger);
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--danger);
+        }
+
+        .status-dot.connected {
+            background-color: var(--success);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .floating-buttons {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .fab-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .fab-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .fab-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .fab-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .refresh-ports {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .floating-buttons {
+                bottom: 1rem;
+                right: 1rem;
+            }
+            
+            .fab-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo animate-fade">
+            <i class="fas fa-microchip"></i>
+            <span>Firmware Uploader</span>
+        </div>
+        <button class="theme-toggle animate-fade delay-1" id="themeToggle">
+            <i class="fas fa-moon"></i>
+            <span>Mode Gelap</span>
+        </button>
+    </header>
+
+    <div class="container">
+        <div class="card animate-fade delay-2">
+            <h2 class="card-title">
+                <i class="fas fa-upload"></i>
+                Upload Firmware
+            </h2>
+            
+            <div class="form-group">
+                <label for="portSelect">Port Serial</label>
+                <div class="select-wrapper">
+                    <select id="portSelect">
+                        <option value="">Mencari port...</option>
+                    </select>
+                    <button class="refresh-ports" id="refreshPorts" title="Refresh Ports">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="baudRate">Baud Rate</label>
+                <select id="baudRate">
+                    <option value="9600">9600</option>
+                    <option value="19200">19200</option>
+                    <option value="38400">38400</option>
+                    <option value="57600">57600</option>
+                    <option value="115200" selected>115200</option>
+                    <option value="230400">230400</option>
+                    <option value="460800">460800</option>
+                    <option value="921600">921600</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="firmwareFile">File Firmware (.bin)</label>
+                <input type="file" id="firmwareFile" accept=".bin">
+            </div>
+            
+            <div class="form-group">
+                <label for="boardType">Tipe Board</label>
+                <select id="boardType">
+                    <option value="esp8266">ESP8266</option>
+                    <option value="esp32">ESP32</option>
+                    <option value="arduino-uno">Arduino Uno</option>
+                    <option value="arduino-nano">Arduino Nano</option>
+                    <option value="arduino-mega">Arduino Mega</option>
+                    <option value="other">Lainnya</option>
+                </select>
+            </div>
+            
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress" id="uploadProgress"></div>
+                </div>
+                <div class="progress-text" id="progressText">0%</div>
+            </div>
+            
+            <button class="btn btn-primary" id="uploadBtn">
+                <i class="fas fa-upload"></i>
+                Upload Firmware
+            </button>
+            
+            <div class="device-info" id="deviceInfo" style="display: none;">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle"></i>
+                    Informasi Perangkat
+                    <span class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span id="statusText">Terputus</span>
+                    </span>
+                </h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Port</div>
+                        <div class="info-value" id="infoPort">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Baud Rate</div>
+                        <div class="info-value" id="infoBaud">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tipe Board</div>
+                        <div class="info-value" id="infoBoard">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Chip ID</div>
+                        <div class="info-value" id="infoChipId">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Flash Size</div>
+                        <div class="info-value" id="infoFlash">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Firmware Terpasang</div>
+                        <div class="info-value" id="infoFirmware">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card animate-fade delay-3">
+            <h2 class="card-title">
+                <i class="fas fa-terminal"></i>
+                Log Sistem
+            </h2>
+            
+            <div class="log-container" id="logContainer"></div>
+        </div>
+    </div>
+    
+    <div class="floating-buttons">
+        <button class="fab-btn fab-primary" id="connectBtn" title="Sambungkan">
+            <i class="fas fa-plug"></i>
+        </button>
+        <button class="fab-btn fab-danger" id="resetBtn" title="Reset Pabrik">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
+
+    <script>
+        // Web Serial API implementation
+        let port = null;
+        let reader = null;
+        let writer = null;
+        let isConnected = false;
+        let isUploading = false;
+        let deviceInfoInterval = null;
+        
+        // DOM Elements
+        const portSelect = document.getElementById('portSelect');
+        const baudRate = document.getElementById('baudRate');
+        const firmwareFile = document.getElementById('firmwareFile');
+        const boardType = document.getElementById('boardType');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressText = document.getElementById('progressText');
+        const logContainer = document.getElementById('logContainer');
+        const deviceInfo = document.getElementById('deviceInfo');
+        const infoPort = document.getElementById('infoPort');
+        const infoBaud = document.getElementById('infoBaud');
+        const infoBoard = document.getElementById('infoBoard');
+        const infoChipId = document.getElementById('infoChipId');
+        const infoFlash = document.getElementById('infoFlash');
+        const infoFirmware = document.getElementById('infoFirmware');
+        const statusText = document.getElementById('statusText');
+        const statusDot = document.querySelector('.status-dot');
+        const connectBtn = document.getElementById('connectBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const refreshPorts = document.getElementById('refreshPorts');
+        const themeToggle = document.getElementById('themeToggle');
+        
+        // Theme toggle
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            themeToggle.innerHTML = isDark 
+                ? '<i class="fas fa-sun"></i><span>Mode Terang</span>' 
+                : '<i class="fas fa-moon"></i><span>Mode Gelap</span>';
+            localStorage.setItem('darkMode', isDark);
+        });
+        
+        // Check for saved theme preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i><span>Mode Terang</span>';
+        }
+        
+        // Add log entry
+        function addLog(message, type = 'info') {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `<span class="log-time">[${timeString}]</span> ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // Request serial port access
+        async function requestPort() {
+            try {
+                if (!navigator.serial) {
+                    addLog('Web Serial API tidak didukung di browser ini', 'error');
+                    return;
+                }
+                
+                port = await navigator.serial.requestPort();
+                addLog(`Port ${port.getInfo().usbVendorId ? 'USB' : 'Serial'} dipilih`, 'info');
+                await updatePortList();
+                
+                // Set port name in select
+                const portName = getPortName(port);
+                portSelect.value = portName;
+            } catch (err) {
+                if (err.name !== 'NotFoundError') {
+                    addLog(`Error: ${err.message}`, 'error');
+                }
+            }
+        }
+        
+        // Get descriptive port name
+        function getPortName(port) {
+            const info = port.getInfo();
+            if (info.usbVendorId && info.usbProductId) {
+                return `USB (Vendor: 0x${info.usbVendorId.toString(16)}, Product: 0x${info.usbProductId.toString(16)})`;
+            }
+            return 'Serial Port';
+        }
+        
+        // Update available ports list
+        async function updatePortList() {
+            try {
+                if (!navigator.serial) {
+                    addLog('Web Serial API tidak didukung di browser ini', 'error');
+                    portSelect.innerHTML = '<option value="">Web Serial tidak didukung</option>';
+                    return;
+                }
+                
+                const ports = await navigator.serial.getPorts();
+                portSelect.innerHTML = ports.length > 0 
+                    ? ports.map(p => `<option value="${getPortName(p)}">${getPortName(p)}</option>`).join('')
+                    : '<option value="">Tidak ada port yang tersedia</option>';
+                
+                if (ports.length > 0 && !port) {
+                    port = ports[0];
+                    portSelect.value = getPortName(port);
+                }
+            } catch (err) {
+                addLog(`Error saat memperbarui daftar port: ${err.message}`, 'error');
+                portSelect.innerHTML = '<option value="">Error memuat port</option>';
+            }
+        }
+        
+        // Connect to selected port
+        async function connectToPort() {
+            if (!port) {
+                addLog('Tidak ada port yang dipilih', 'warning');
+                return;
+            }
+            
+            if (isConnected) {
+                await disconnectFromPort();
+                return;
+            }
+            
+            try {
+                const selectedBaudRate = parseInt(baudRate.value);
+                await port.open({ baudRate: selectedBaudRate });
+                
+                writer = port.writable.getWriter();
+                reader = port.readable.getReader();
+                
+                isConnected = true;
+                statusDot.classList.add('connected');
+                statusText.textContent = 'Tersambung';
+                connectBtn.innerHTML = '<i class="fas fa-unplug"></i>';
+                addLog(`Tersambung ke port dengan baud rate ${selectedBaudRate}`, 'success');
+                
+                // Update device info
+                updateDeviceInfo();
+                
+                // Start reading from port
+                readFromPort();
+                
+                // Start device info polling
+                startDeviceInfoPolling();
+            } catch (err) {
+                addLog(`Error saat menyambung: ${err.message}`, 'error');
+                isConnected = false;
+                statusDot.classList.remove('connected');
+                statusText.textContent = 'Terputus';
+            }
+        }
+        
+        // Disconnect from port
+        async function disconnectFromPort() {
+            try {
+                if (writer) {
+                    await writer.releaseLock();
+                    writer = null;
+                }
+                
+                if (reader) {
+                    await reader.cancel();
+                    await reader.releaseLock();
+                    reader = null;
+                }
+                
+                if (port) {
+                    await port.close();
+                }
+                
+                isConnected = false;
+                statusDot.classList.remove('connected');
+                statusText.textContent = 'Terputus';
+                connectBtn.innerHTML = '<i class="fas fa-plug"></i>';
+                addLog('Port terputus', 'warning');
+                
+                // Stop device info polling
+                stopDeviceInfoPolling();
+            } catch (err) {
+                addLog(`Error saat memutuskan: ${err.message}`, 'error');
+            }
+        }
+        
+        // Read data from port
+        async function readFromPort() {
+            while (isConnected && reader) {
+                try {
+                    const { value, done } = await reader.read();
+                    if (done) {
+                        addLog('Pembacaan port selesai', 'warning');
+                        break;
+                    }
+                    
+                    if (value) {
+                        const text = new TextDecoder().decode(value);
+                        const lines = text.split('\n');
+                        
+                        for (const line of lines) {
+                            if (line.trim() === '') continue;
+                            
+                            // Parse device info if detected
+                            if (line.includes('Chip ID:') || line.includes('Flash Size:') || line.includes('Firmware:')) {
+                                parseDeviceInfo(line);
+                            } else {
+                                addLog(`Perangkat: ${line.trim()}`, 'info');
+                            }
+                        }
+                    }
+                } catch (err) {
+                    if (err.name !== 'NetworkError') {
+                        addLog(`Error membaca port: ${err.message}`, 'error');
+                    }
+                    await disconnectFromPort();
+                    break;
+                }
+            }
+        }
+        
+        // Write data to port
+        async function writeToPort(data) {
+            if (!isConnected || !writer) {
+                addLog('Tidak tersambung ke port', 'error');
+                return false;
+            }
+            
+            try {
+                const encoder = new TextEncoder();
+                await writer.write(encoder.encode(data + '\n'));
+                return true;
+            } catch (err) {
+                addLog(`Error menulis ke port: ${err.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // Update device info display
+        function updateDeviceInfo() {
+            deviceInfo.style.display = 'block';
+            infoPort.textContent = portSelect.value || '-';
+            infoBaud.textContent = baudRate.value;
+            infoBoard.textContent = boardType.options[boardType.selectedIndex].text;
+        }
+        
+        // Parse device info from serial output
+        function parseDeviceInfo(text) {
+            const chipIdMatch = text.match(/Chip ID:\s*(0x[0-9a-fA-F]+|\d+)/i);
+            const flashSizeMatch = text.match(/Flash Size:\s*([0-9]+)\s*MB/i);
+            const firmwareMatch = text.match(/Firmware:\s*(.+)/i);
+            
+            if (chipIdMatch) {
+                infoChipId.textContent = chipIdMatch[1];
+                addLog(`Chip ID terdeteksi: ${chipIdMatch[1]}`, 'success');
+            }
+            if (flashSizeMatch) {
+                infoFlash.textContent = `${flashSizeMatch[1]} MB`;
+                addLog(`Flash Size terdeteksi: ${flashSizeMatch[1]} MB`, 'success');
+            }
+            if (firmwareMatch) {
+                infoFirmware.textContent = firmwareMatch[1];
+                addLog(`Firmware terdeteksi: ${firmwareMatch[1]}`, 'success');
+            }
+        }
+        
+        // Start polling for device info
+        function startDeviceInfoPolling() {
+            stopDeviceInfoPolling();
+            
+            // Clear existing info
+            infoChipId.textContent = '-';
+            infoFlash.textContent = '-';
+            infoFirmware.textContent = '-';
+            
+            // Send device info request every 2 seconds
+            deviceInfoInterval = setInterval(async () => {
+                if (isConnected) {
+                    await writeToPort('INFO');
+                }
+            }, 2000);
+        }
+        
+        // Stop polling for device info
+        function stopDeviceInfoPolling() {
+            if (deviceInfoInterval) {
+                clearInterval(deviceInfoInterval);
+                deviceInfoInterval = null;
+            }
+        }
+        
+        // Upload firmware
+        async function uploadFirmware() {
+            if (!port) {
+                addLog('Silakan pilih port terlebih dahulu', 'warning');
+                return;
+            }
+            
+            if (!firmwareFile.files.length) {
+                addLog('Silakan pilih file firmware', 'warning');
+                return;
+            }
+            
+            if (isUploading) {
+                addLog('Upload sedang berlangsung', 'warning');
+                return;
+            }
+            
+            if (!isConnected) {
+                addLog('Silakan sambungkan ke port terlebih dahulu', 'warning');
+                return;
+            }
+            
+            isUploading = true;
+            uploadBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            
+            try {
+                const file = firmwareFile.files[0];
+                const fileSize = file.size;
+                const chunkSize = 512; // 512 byte chunks
+                let bytesUploaded = 0;
+                
+                addLog(`Memulai upload firmware: ${file.name} (${(fileSize / 1024).toFixed(2)} KB)`, 'info');
+                addLog(`Menggunakan baud rate: ${baudRate.value}`, 'info');
+                addLog(`Tipe board: ${boardType.options[boardType.selectedIndex].text}`, 'info');
+                
+                // Send upload command to device
+                await writeToPort(`UPLOAD_START:${fileSize}`);
+                
+                const fileReader = new FileReader();
+                
+                return new Promise((resolve) => {
+                    fileReader.onload = async function(e) {
+                        const buffer = e.target.result;
+                        const view = new Uint8Array(buffer);
+                        
+                        try {
+                            // Send firmware to device in chunks
+                            for (let i = 0; i < view.length; i += chunkSize) {
+                                if (!isConnected || !isUploading) break;
+                                
+                                const chunk = view.slice(i, Math.min(i + chunkSize, view.length));
+                                const success = await writeToPort(`UPLOAD_DATA:${Array.from(chunk).join(',')}`);
+                                
+                                if (!success) {
+                                    throw new Error('Gagal mengirim data ke port');
+                                }
+                                
+                                bytesUploaded += chunk.length;
+                                const progress = Math.min(100, (bytesUploaded / fileSize) * 100);
+                                
+                                uploadProgress.style.width = `${progress}%`;
+                                progressText.textContent = `${progress.toFixed(1)}%`;
+                                
+                                // Update log every 5%
+                                if (Math.floor(progress) % 5 === 0 && progress % 5 < 0.1) {
+                                    addLog(`Upload progress: ${progress.toFixed(1)}%`, 'info');
+                                }
+                            }
+                            
+                            if (isConnected && isUploading) {
+                                // Send upload complete command
+                                await writeToPort('UPLOAD_END');
+                                addLog('Upload firmware selesai', 'success');
+                                addLog('Perangkat akan restart...', 'info');
+                                
+                                // Wait for device to restart
+                                setTimeout(async () => {
+                                    await disconnectFromPort();
+                                    setTimeout(async () => {
+                                        await connectToPort();
+                                    }, 2000);
+                                }, 1000);
+                            }
+                        } catch (err) {
+                            addLog(`Error selama upload: ${err.message}`, 'error');
+                        } finally {
+                            isUploading = false;
+                            uploadBtn.disabled = false;
+                            resolve();
+                        }
+                    };
+                    
+                    fileReader.readAsArrayBuffer(file);
+                });
+            } catch (err) {
+                addLog(`Error saat upload firmware: ${err.message}`, 'error');
+                isUploading = false;
+                uploadBtn.disabled = false;
+            }
+        }
+        
+        // Reset device to factory settings
+        async function resetDevice() {
+            if (!isConnected) {
+                addLog('Silakan sambungkan ke perangkat terlebih dahulu', 'warning');
+                return;
+            }
+            
+            if (confirm('Apakah Anda yakin ingin mereset perangkat ke pengaturan pabrik? Semua data akan dihapus.')) {
+                try {
+                    addLog('Memulai reset pabrik...', 'warning');
+                    const success = await writeToPort('FACTORY_RESET');
+                    
+                    if (success) {
+                        addLog('Reset pabrik berhasil, perangkat akan restart', 'success');
+                        
+                        // Wait for device to restart
+                        setTimeout(async () => {
+                            await disconnectFromPort();
+                            setTimeout(async () => {
+                                await connectToPort();
+                            }, 2000);
+                        }, 1000);
+                    }
+                } catch (err) {
+                    addLog(`Error saat reset pabrik: ${err.message}`, 'error');
+                }
+            }
+        }
+        
+        // Event listeners
+        portSelect.addEventListener('click', async () => {
+            if (!port) {
+                await requestPort();
+            }
+        });
+        
+        refreshPorts.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            addLog('Memperbarui daftar port...', 'info');
+            await updatePortList();
+        });
+        
+        connectBtn.addEventListener('click', connectToPort);
+        uploadBtn.addEventListener('click', uploadFirmware);
+        resetBtn.addEventListener('click', resetDevice);
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            addLog('Sistem siap', 'success');
+            
+            // Check for Web Serial API support
+            if (!navigator.serial) {
+                addLog('Browser tidak mendukung Web Serial API', 'error');
+                addLog('Gunakan Chrome/Edge versi terbaru', 'warning');
+                portSelect.disabled = true;
+                connectBtn.disabled = true;
+                uploadBtn.disabled = true;
+                return;
+            }
+            
+            // Request serial port access on first interaction
+            document.addEventListener('click', async () => {
+                if (!port) {
+                    await updatePortList();
+                }
+            }, { once: true });
+        });
+    </script>
+</body>
+</html>
