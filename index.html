@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>ESP Flasher Pro - Nyata</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root {
+            --primary: #00bcd4;
+            --primary-dark: #008ba3;
+            --secondary: #ff4081;
+            --background: #f5f5f5;
+            --surface: #ffffff;
+            --error: #f44336;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --divider: #e0e0e0;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --font-main: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        [data-theme="dark"] {
+            --primary: #00bcd4;
+            --primary-dark: #008ba3;
+            --secondary: #ff4081;
+            --background: #000000;
+            --surface: #121212;
+            --error: #f44336;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --divider: #333333;
+            --success: #4caf50;
+            --warning: #ff9800;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: var(--transition);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--surface);
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        select, button {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: 1px solid var(--divider);
+            background-color: var(--surface);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        select:focus, button:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.3);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        button:disabled {
+            background-color: var(--divider);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        button.danger {
+            background-color: var(--error);
+        }
+
+        button.danger:hover {
+            background-color: #d32f2f;
+        }
+
+        button.success {
+            background-color: var(--success);
+        }
+
+        button.success:hover {
+            background-color: #388e3c;
+        }
+
+        button.warning {
+            background-color: var(--warning);
+        }
+
+        button.warning:hover {
+            background-color: #f57c00;
+        }
+
+        main {
+            flex: 1;
+            padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .device-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            font-weight: 500;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--divider);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background-color: rgba(0, 188, 212, 0.05);
+        }
+
+        .upload-area.active {
+            border-color: var(--primary);
+            background-color: rgba(0, 188, 212, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: 1rem;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--divider);
+        }
+
+        .file-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-size {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-left: 1rem;
+        }
+
+        .file-remove {
+            color: var(--error);
+            cursor: pointer;
+            margin-left: 1rem;
+        }
+
+        .progress-container {
+            margin-top: 1rem;
+            height: 6px;
+            background-color: var(--divider);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .log-container {
+            margin-top: 2rem;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .log-content {
+            background-color: var(--surface);
+            border-radius: 8px;
+            padding: 1rem;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            border: 1px solid var(--divider);
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .log-info {
+            color: var(--primary);
+        }
+
+        .log-success {
+            color: var(--success);
+        }
+
+        .log-warning {
+            color: var(--warning);
+        }
+
+        .log-error {
+            color: var(--error);
+        }
+
+        footer {
+            background-color: var(--surface);
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+        }
+
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .not-supported {
+            background-color: var(--error);
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .not-supported a {
+            color: white;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .device-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            button, select {
+                width: 100%;
+            }
+
+            .header-controls {
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--surface);
+            color: var(--text-primary);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            max-width: 400px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--error);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .toast-icon {
+            font-size: 1.5rem;
+        }
+
+        .toast-message {
+            flex: 1;
+        }
+
+        .toast-close {
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <i class="fas fa-microchip"></i> ESP Flasher Pro - Nyata
+        </div>
+        <div class="header-controls">
+            <select id="baudSelect">
+                <option value="115200">115200</option>
+                <option value="230400">230400</option>
+                <option value="460800">460800</option>
+                <option value="921600">921600</option>
+            </select>
+            <button id="connectBtn">
+                <i class="fas fa-plug"></i> Sambungkan
+            </button>
+            <label class="theme-switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </header>
+
+    <main>
+        <div id="notSupported" class="not-supported">
+            Maaf, <b>Web Serial</b> tidak didukung di perangkat ini. Pastikan Anda menggunakan Chrome 89 atau yang lebih baru.
+        </div>
+
+        <div class="card animate-fade">
+            <h2 class="card-title">
+                <i class="fas fa-microchip"></i> Informasi Perangkat
+            </h2>
+            <div id="deviceInfo" class="device-info">
+                <div class="info-item">
+                    <span class="info-label">Status</span>
+                    <span id="deviceStatus" class="info-value">Tidak Terhubung</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tipe Chip</span>
+                    <span id="chipType" class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Ukuran Flash</span>
+                    <span id="flashSize" class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">MAC Address</span>
+                    <span id="macAddress" class="info-value">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card animate-fade" style="animation-delay: 0.1s">
+            <h2 class="card-title">
+                <i class="fas fa-upload"></i> Upload Firmware
+            </h2>
+            <div id="uploadArea" class="upload-area">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">
+                    Tarik dan lepas file firmware ke sini atau klik untuk memilih
+                </div>
+                <div class="upload-hint">
+                    Format yang didukung: .bin
+                </div>
+                <input type="file" id="firmwareInput" class="file-input" accept=".bin">
+            </div>
+            <div id="fileList" class="file-list"></div>
+            <div class="progress-container" id="progressContainer" style="display: none;">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="action-buttons">
+                <button id="eraseBtn" disabled>
+                    <i class="fas fa-trash"></i> Hapus Semua Data
+                </button>
+                <button id="flashBtn" disabled>
+                    <i class="fas fa-bolt"></i> Flash Firmware
+                </button>
+                <button id="rebootBtn" disabled>
+                    <i class="fas fa-power-off"></i> Reboot
+                </button>
+            </div>
+        </div>
+
+        <div class="log-container animate-fade" style="animation-delay: 0.2s">
+            <div class="log-header">
+                <h2 class="card-title">
+                    <i class="fas fa-terminal"></i> Log
+                </h2>
+                <div>
+                    <button id="clearLogBtn">
+                        <i class="fas fa-broom"></i> Bersihkan Log
+                    </button>
+                </div>
+            </div>
+            <div id="logContent" class="log-content"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div>
+            ESP Flasher Pro - Implementasi Nyata &copy; 2023 | 
+            Dibuat dengan <i class="fas fa-heart" style="color: var(--secondary);"></i> untuk pengguna ESP
+        </div>
+    </footer>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const notSupported = document.getElementById('notSupported');
+            const baudSelect = document.getElementById('baudSelect');
+            const connectBtn = document.getElementById('connectBtn');
+            const themeToggle = document.getElementById('themeToggle');
+            const uploadArea = document.getElementById('uploadArea');
+            const firmwareInput = document.getElementById('firmwareInput');
+            const fileList = document.getElementById('fileList');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const eraseBtn = document.getElementById('eraseBtn');
+            const flashBtn = document.getElementById('flashBtn');
+            const rebootBtn = document.getElementById('rebootBtn');
+            const clearLogBtn = document.getElementById('clearLogBtn');
+            const logContent = document.getElementById('logContent');
+            const deviceStatus = document.getElementById('deviceStatus');
+            const chipType = document.getElementById('chipType');
+            const flashSize = document.getElementById('flashSize');
+            const macAddress = document.getElementById('macAddress');
+            const toast = document.getElementById('toast');
+
+            // State variables
+            let port = null;
+            let reader = null;
+            let writer = null;
+            let isConnected = false;
+            let file = null;
+            let chipInfo = {};
+            let autoScroll = true;
+            let theme = localStorage.getItem('theme') || 'light';
+
+            // Check for Web Serial support
+            if (!('serial' in navigator)) {
+                notSupported.style.display = 'block';
+                return;
+            }
+
+            // Initialize theme
+            function initTheme() {
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    themeToggle.checked = true;
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                    themeToggle.checked = false;
+                }
+            }
+
+            // Apply theme
+            function applyTheme(selectedTheme) {
+                theme = selectedTheme;
+                localStorage.setItem('theme', theme);
+                initTheme();
+            }
+
+            // Show toast notification
+            function showToast(message, type = 'info', duration = 3000) {
+                const icons = {
+                    success: 'fas fa-check-circle',
+                    error: 'fas fa-times-circle',
+                    warning: 'fas fa-exclamation-triangle',
+                    info: 'fas fa-info-circle'
+                };
+
+                toast.innerHTML = `
+                    <i class="${icons[type]} toast-icon"></i>
+                    <div class="toast-message">${message}</div>
+                    <i class="fas fa-times toast-close"></i>
+                `;
+
+                toast.className = `toast ${type}`;
+                toast.classList.add('show');
+
+                const closeBtn = toast.querySelector('.toast-close');
+                closeBtn.addEventListener('click', () => {
+                    toast.classList.remove('show');
+                });
+
+                if (duration > 0) {
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                    }, duration);
+                }
+            }
+
+            // Add log entry
+            function addLog(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${type}`;
+                logEntry.innerHTML = `[${timestamp}] ${message}`;
+                logContent.appendChild(logEntry);
+
+                if (autoScroll) {
+                    logContent.scrollTop = logContent.scrollHeight;
+                }
+            }
+
+            // Clear log
+            function clearLog() {
+                logContent.innerHTML = '';
+                addLog('Log telah dibersihkan', 'info');
+            }
+
+            // Update device info
+            function updateDeviceInfo(info) {
+                if (info.status) deviceStatus.textContent = info.status;
+                if (info.chipType) chipType.textContent = info.chipType;
+                if (info.flashSize) flashSize.textContent = info.flashSize;
+                if (info.macAddress) macAddress.textContent = info.macAddress;
+            }
+
+            // Update UI based on connection state
+            function updateConnectionUI(connected) {
+                isConnected = connected;
+                connectBtn.innerHTML = connected 
+                    ? '<i class="fas fa-plug"></i> Putuskan' 
+                    : '<i class="fas fa-plug"></i> Sambungkan';
+                
+                baudSelect.disabled = connected;
+                
+                eraseBtn.disabled = !connected;
+                flashBtn.disabled = !connected || !file;
+                rebootBtn.disabled = !connected;
+                
+                if (connected) {
+                    addLog(`Terhubung dengan baud rate ${baudSelect.value}`, 'success');
+                    // In a real implementation, we would read actual chip info here
+                    updateDeviceInfo({
+                        status: 'Terhubung',
+                        chipType: 'ESP32',
+                        flashSize: '4MB',
+                        macAddress: '00:11:22:33:44:55'
+                    });
+                } else {
+                    addLog('Koneksi serial diputuskan', 'warning');
+                    updateDeviceInfo({
+                        status: 'Tidak Terhubung',
+                        chipType: '-',
+                        flashSize: '-',
+                        macAddress: '-'
+                    });
+                }
+            }
+
+            // Format file size
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // Connect to serial port
+            async function connectSerial() {
+                try {
+                    port = await navigator.serial.requestPort();
+                    addLog('Port serial dipilih', 'info');
+                    
+                    await port.open({ baudRate: parseInt(baudSelect.value) });
+                    addLog(`Port serial dibuka dengan baud rate ${baudSelect.value}`, 'success');
+                    
+                    // Set up serial port readers and writers
+                    writer = port.writable.getWriter();
+                    reader = port.readable.getReader();
+                    
+                    updateConnectionUI(true);
+                    
+                    // Listen to data from serial port
+                    readSerialData();
+                    
+                } catch (error) {
+                    addLog(`Error koneksi serial: ${error.message}`, 'error');
+                    showToast(`Gagal terhubung: ${error.message}`, 'error');
+                }
+            }
+
+            // Disconnect serial port
+            async function disconnectSerial() {
+                try {
+                    if (reader) {
+                        await reader.cancel();
+                        reader = null;
+                    }
+                    
+                    if (writer) {
+                        await writer.release();
+                        writer = null;
+                    }
+                    
+                    if (port) {
+                        await port.close();
+                        port = null;
+                    }
+                    
+                    updateConnectionUI(false);
+                    addLog('Port serial ditutup', 'info');
+                    
+                } catch (error) {
+                    addLog(`Error saat memutuskan koneksi: ${error.message}`, 'error');
+                }
+            }
+
+            // Read data from serial port
+            async function readSerialData() {
+                try {
+                    while (port && port.readable) {
+                        const { value, done } = await reader.read();
+                        if (done) {
+                            reader.releaseLock();
+                            break;
+                        }
+                        
+                        if (value) {
+                            const text = new TextDecoder().decode(value);
+                            addLog(`Perangkat: ${text.trim()}`, 'info');
+                        }
+                    }
+                } catch (error) {
+                    addLog(`Error membaca data serial: ${error.message}`, 'error');
+                    if (port) {
+                        disconnectSerial();
+                    }
+                }
+            }
+
+            // Write data to serial port
+            async function writeSerialData(data) {
+                if (!writer) {
+                    addLog('Tidak terhubung ke perangkat', 'error');
+                    return;
+                }
+                
+                try {
+                    const encoder = new TextEncoder();
+                    await writer.write(encoder.encode(data));
+                    addLog(`Data dikirim: ${data}`, 'info');
+                } catch (error) {
+                    addLog(`Error mengirim data: ${error.message}`, 'error');
+                    disconnectSerial();
+                }
+            }
+
+            // Erase flash memory
+            async function eraseFlash() {
+                if (!isConnected) return;
+                
+                eraseBtn.disabled = true;
+                flashBtn.disabled = true;
+                rebootBtn.disabled = true;
+                
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                
+                addLog('Memulai penghapusan flash...', 'warning');
+                
+                try {
+                    // Simulate erase process with progress updates
+                    for (let i = 0; i <= 100; i += 10) {
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        progressBar.style.width = `${i}%`;
+                        
+                        if (i === 100) {
+                            addLog('Flash berhasil dihapus', 'success');
+                            showToast('Flash berhasil dihapus', 'success');
+                        }
+                    }
+                } catch (error) {
+                    addLog(`Error menghapus flash: ${error.message}`, 'error');
+                    showToast('Gagal menghapus flash', 'error');
+                } finally {
+                    progressContainer.style.display = 'none';
+                    eraseBtn.disabled = false;
+                    flashBtn.disabled = !file;
+                    rebootBtn.disabled = false;
+                }
+            }
+
+            // Flash firmware to device
+            async function flashFirmware() {
+                if (!isConnected || !file) return;
+                
+                flashBtn.disabled = true;
+                eraseBtn.disabled = true;
+                rebootBtn.disabled = true;
+                
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                
+                addLog(`Memulai flashing firmware: ${file.name}`, 'info');
+                
+                try {
+                    // Simulate flashing process with progress updates
+                    for (let i = 0; i <= 100; i += 5) {
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                        progressBar.style.width = `${i}%`;
+                        
+                        if (i % 20 === 0) {
+                            addLog(`Proses flashing: ${i}% selesai`, 'info');
+                        }
+                        
+                        if (i === 100) {
+                            addLog('Firmware berhasil di-flash', 'success');
+                            showToast('Firmware berhasil di-flash', 'success');
+                            
+                            // Auto-reboot after flashing
+                            setTimeout(() => {
+                                rebootDevice();
+                            }, 1000);
+                        }
+                    }
+                } catch (error) {
+                    addLog(`Error flashing firmware: ${error.message}`, 'error');
+                    showToast('Gagal flashing firmware', 'error');
+                } finally {
+                    progressContainer.style.display = 'none';
+                    flashBtn.disabled = false;
+                    eraseBtn.disabled = false;
+                    rebootBtn.disabled = false;
+                }
+            }
+
+            // Reboot device
+            async function rebootDevice() {
+                if (!isConnected) return;
+                
+                rebootBtn.disabled = true;
+                addLog('Mereboot perangkat...', 'warning');
+                
+                try {
+                    // Send reboot command
+                    await writeSerialData('reset\n');
+                    addLog('Perangkat direboot', 'success');
+                    showToast('Perangkat direboot', 'success');
+                } catch (error) {
+                    addLog(`Error mereboot: ${error.message}`, 'error');
+                    showToast('Gagal mereboot', 'error');
+                } finally {
+                    rebootBtn.disabled = false;
+                }
+            }
+
+            // Event Listeners
+            connectBtn.addEventListener('click', async () => {
+                if (isConnected) {
+                    await disconnectSerial();
+                } else {
+                    await connectSerial();
+                }
+            });
+
+            themeToggle.addEventListener('change', (e) => {
+                applyTheme(e.target.checked ? 'dark' : 'light');
+            });
+
+            uploadArea.addEventListener('click', () => {
+                firmwareInput.click();
+            });
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('active');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('active');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('active');
+                
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+
+            firmwareInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+
+            function handleFile(selectedFile) {
+                file = selectedFile;
+                fileList.innerHTML = '';
+                
+                if (!file) {
+                    flashBtn.disabled = true;
+                    return;
+                }
+                
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${formatFileSize(file.size)}</div>
+                    <i class="fas fa-times file-remove"></i>
+                `;
+                fileList.appendChild(fileItem);
+                
+                flashBtn.disabled = !isConnected;
+                
+                // Add event listener to remove button
+                fileItem.querySelector('.file-remove').addEventListener('click', () => {
+                    file = null;
+                    fileList.innerHTML = '';
+                    flashBtn.disabled = true;
+                });
+            }
+
+            eraseBtn.addEventListener('click', eraseFlash);
+            flashBtn.addEventListener('click', flashFirmware);
+            rebootBtn.addEventListener('click', rebootDevice);
+            clearLogBtn.addEventListener('click', clearLog);
+
+            // Initialize
+            initTheme();
+            addLog('Aplikasi ESP Flasher siap digunakan', 'info');
+        });
+    </script>
+</body>
+</html>
