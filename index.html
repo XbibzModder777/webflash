@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP Web Flasher</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4285f4;
+            --primary-dark: #3367d6;
+            --success: #0f9d58;
+            --danger: #db4437;
+            --warning: #f4b400;
+            --text: #202124;
+            --text-secondary: #5f6368;
+            --bg: #ffffff;
+            --bg-secondary: #f1f3f4;
+            --bg-tertiary: #e8eaed;
+            --border: #dadce0;
+            --shadow: 0 1px 2px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --primary: #8ab4f8;
+            --primary-dark: #7aa7f7;
+            --success: #81c995;
+            --danger: #f28b82;
+            --warning: #fde293;
+            --text: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --bg: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2d2d2d;
+            --border: #3c4043;
+            --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            transition: var(--transition);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 20px;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary);
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        select:focus, input:focus, button:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        button:disabled {
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background-color: #c1351d;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+        }
+
+        .btn-success:hover {
+            background-color: #0b8043;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: #202124;
+        }
+
+        .btn-warning:hover {
+            background-color: #e6a700;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--bg-tertiary);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .device-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--bg-tertiary);
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .device-info p {
+            margin-bottom: 5px;
+        }
+
+        .log-container {
+            margin-top: 20px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-header {
+            background-color: var(--bg-secondary);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .log-content {
+            flex: 1;
+            padding: 15px;
+            background-color: var(--bg);
+            overflow-y: auto;
+            max-height: 300px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .log-line {
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+
+        .log-line.info {
+            color: var(--primary);
+        }
+
+        .log-line.success {
+            color: var(--success);
+        }
+
+        .log-line.error {
+            color: var(--danger);
+        }
+
+        .log-line.warning {
+            color: var(--warning);
+        }
+
+        .clear-log {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .clear-log:hover {
+            color: var(--danger);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            background-color: var(--danger);
+        }
+
+        .status-indicator.connected {
+            background-color: var(--success);
+        }
+
+        .status-indicator.flashing {
+            background-color: var(--warning);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            border-top: 1px solid var(--border);
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(2px); }
+            30%, 50%, 70% { transform: translateX(-4px); }
+            40%, 60% { transform: translateX(4px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fab fa-usb"></i>
+                <span>ESP Web Flasher</span>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </header>
+
+        <div class="card fade-in">
+            <h2 class="card-title">
+                <i class="fab fa-connectdevelop"></i>
+                Koneksi Perangkat
+            </h2>
+            <div class="form-group">
+                <label for="portSelect">Port Serial</label>
+                <select id="portSelect" disabled>
+                    <option value="">Pilih port atau klik tombol Connect</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="baudRate">Baud Rate</label>
+                <select id="baudRate">
+                    <option value="115200">115200</option>
+                    <option value="230400">230400</option>
+                    <option value="460800">460800</option>
+                    <option value="921600">921600</option>
+                    <option value="2000000">2000000</option>
+                </select>
+            </div>
+            <button id="connectBtn" class="btn-success">
+                <i class="fas fa-link"></i>
+                <span>Connect</span>
+            </button>
+            <div class="device-info" id="deviceInfo">
+                <p><strong>Status:</strong> <span class="status-indicator" id="statusIndicator"></span> <span id="statusText">Disconnected</span></p>
+                <p><strong>Manufacturer:</strong> <span id="manufacturer">-</span></p>
+                <p><strong>Product ID:</strong> <span id="productId">-</span></p>
+                <p><strong>Vendor ID:</strong> <span id="vendorId">-</span></p>
+                <p><strong>Serial Number:</strong> <span id="serialNumber">-</span></p>
+            </div>
+        </div>
+
+        <div class="card fade-in">
+            <h2 class="card-title">
+                <i class="fas fa-microchip"></i>
+                Firmware Update
+            </h2>
+            <div class="form-group">
+                <label for="firmwareFile">File Firmware (.bin)</label>
+                <input type="file" id="firmwareFile" accept=".bin">
+            </div>
+            <div class="form-group">
+                <label for="flashAddress">Alamat Flash (Hex)</label>
+                <input type="text" id="flashAddress" value="0x0000" placeholder="0x0000">
+            </div>
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress" id="progressBar"></div>
+                </div>
+                <div class="progress-text" id="progressText">0%</div>
+            </div>
+            <div class="button-group">
+                <button id="flashBtn" disabled>
+                    <i class="fas fa-upload"></i>
+                    <span>Flash Firmware</span>
+                </button>
+                <button id="rebootBtn" disabled class="btn-warning">
+                    <i class="fas fa-power-off"></i>
+                    <span>Reboot</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="card fade-in">
+            <h2 class="card-title">
+                <i class="fas fa-cog"></i>
+                Pengaturan Lanjutan
+            </h2>
+            <div class="button-group">
+                <button id="eraseFlashBtn" disabled class="btn-danger">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Hapus Semua Data</span>
+                </button>
+                <button id="detectChipBtn" disabled class="btn-warning">
+                    <i class="fas fa-search"></i>
+                    <span>Deteksi Chip</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="log-container fade-in">
+            <div class="log-header">
+                <span><i class="fas fa-terminal"></i> Log</span>
+                <button class="clear-log" id="clearLogBtn">
+                    <i class="fas fa-broom"></i>
+                    <span>Bersihkan</span>
+                </button>
+            </div>
+            <div class="log-content" id="logContent"></div>
+        </div>
+    </div>
+
+    <footer>
+        ESP Web Flasher &copy; 2023 | Dibangun dengan <i class="fas fa-heart" style="color: var(--danger);"></i> untuk pengembang ESP
+    </footer>
+
+    <script src="https://unpkg.com/esptool-js/bundle.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const themeToggle = document.getElementById('themeToggle');
+            const portSelect = document.getElementById('portSelect');
+            const baudRate = document.getElementById('baudRate');
+            const connectBtn = document.getElementById('connectBtn');
+            const flashBtn = document.getElementById('flashBtn');
+            const rebootBtn = document.getElementById('rebootBtn');
+            const eraseFlashBtn = document.getElementById('eraseFlashBtn');
+            const detectChipBtn = document.getElementById('detectChipBtn');
+            const firmwareFile = document.getElementById('firmwareFile');
+            const flashAddress = document.getElementById('flashAddress');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const logContent = document.getElementById('logContent');
+            const clearLogBtn = document.getElementById('clearLogBtn');
+            const deviceInfo = document.getElementById('deviceInfo');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const manufacturer = document.getElementById('manufacturer');
+            const productId = document.getElementById('productId');
+            const vendorId = document.getElementById('vendorId');
+            const serialNumber = document.getElementById('serialNumber');
+
+            // Variables
+            let port = null;
+            let espLoader = null;
+            let chip = null;
+            let isConnected = false;
+            let isFlashing = false;
+            let theme = localStorage.getItem('theme') || 'light';
+
+            // Initialize
+            setTheme(theme);
+            updatePortList();
+
+            // Event Listeners
+            themeToggle.addEventListener('click', toggleTheme);
+            connectBtn.addEventListener('click', toggleConnection);
+            flashBtn.addEventListener('click', flashFirmware);
+            rebootBtn.addEventListener('click', rebootDevice);
+            eraseFlashBtn.addEventListener('click', eraseFlash);
+            detectChipBtn.addEventListener('click', detectChip);
+            clearLogBtn.addEventListener('click', clearLog);
+            firmwareFile.addEventListener('change', validateFirmwareFile);
+
+            // Theme functions
+            function setTheme(newTheme) {
+                theme = newTheme;
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+                
+                const icon = themeToggle.querySelector('i');
+                if (theme === 'dark') {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            }
+
+            function toggleTheme() {
+                setTheme(theme === 'light' ? 'dark' : 'light');
+            }
+
+            // Log functions
+            function log(message, type = 'info') {
+                const line = document.createElement('div');
+                line.className = `log-line ${type}`;
+                line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logContent.appendChild(line);
+                logContent.scrollTop = logContent.scrollHeight;
+            }
+
+            function clearLog() {
+                logContent.innerHTML = '';
+                log('Log dibersihkan', 'info');
+            }
+
+            // Port functions
+            async function updatePortList() {
+                try {
+                    const ports = await navigator.serial.getPorts();
+                    portSelect.innerHTML = '<option value="">Pilih port atau klik tombol Connect</option>';
+                    
+                    if (ports.length > 0) {
+                        ports.forEach(p => {
+                            const option = document.createElement('option');
+                            option.value = p.getInfo().usbProductId || 'default';
+                            option.textContent = p.getInfo().usbProductId ? `USB Serial (${p.getInfo().usbProductId})` : 'Serial Port';
+                            portSelect.appendChild(option);
+                        });
+                        portSelect.disabled = false;
+                    } else {
+                        portSelect.disabled = true;
+                    }
+                } catch (error) {
+                    log(`Gagal mendapatkan daftar port: ${error.message}`, 'error');
+                }
+            }
+
+            async function toggleConnection() {
+                if (isConnected) {
+                    await disconnect();
+                } else {
+                    await connect();
+                }
+            }
+
+            async function connect() {
+                try {
+                    log('Mencoba menghubungkan ke perangkat...', 'info');
+                    
+                    // Request port access
+                    port = await navigator.serial.requestPort();
+                    
+                    // Update UI
+                    connectBtn.disabled = true;
+                    connectBtn.innerHTML = '<div class="loading"></div> <span>Menghubungkan...</span>';
+                    
+                    // Open port
+                    await port.open({ baudRate: parseInt(baudRate.value) });
+                    
+                    // Initialize ESPLoader
+                    const terminal = {
+                        clean: () => logContent.innerHTML = '',
+                        writeLine: (data) => log(data, 'info'),
+                        write: (data) => log(data, 'info')
+                    };
+                    
+                    espLoader = new ESPTool.loader.ESPLoader(terminal, port);
+                    
+                    // Detect chip
+                    log('Mendeteksi chip ESP...', 'info');
+                    chip = await espLoader.connect();
+                    log(`Chip terdeteksi: ${chip.CHIP_NAME}`, 'success');
+                    
+                    // Update device info
+                    const info = port.getInfo();
+                    manufacturer.textContent = info.usbManufacturer || '-';
+                    productId.textContent = info.usbProductId ? `0x${info.usbProductId.toString(16)}` : '-';
+                    vendorId.textContent = info.usbVendorId ? `0x${info.usbVendorId.toString(16)}` : '-';
+                    serialNumber.textContent = info.usbSerialNumber || '-';
+                    
+                    // Update status
+                    isConnected = true;
+                    statusIndicator.classList.add('connected');
+                    statusText.textContent = 'Connected';
+                    deviceInfo.style.display = 'block';
+                    
+                    // Enable buttons
+                    flashBtn.disabled = false;
+                    rebootBtn.disabled = false;
+                    eraseFlashBtn.disabled = false;
+                    detectChipBtn.disabled = false;
+                    
+                    // Update connect button
+                    connectBtn.disabled = false;
+                    connectBtn.innerHTML = '<i class="fas fa-unlink"></i> <span>Disconnect</span>';
+                    connectBtn.classList.remove('btn-success');
+                    connectBtn.classList.add('btn-danger');
+                    
+                    log('Berhasil terhubung ke perangkat', 'success');
+                } catch (error) {
+                    log(`Gagal menghubungkan: ${error.message}`, 'error');
+                    connectBtn.disabled = false;
+                    connectBtn.innerHTML = '<i class="fas fa-link"></i> <span>Connect</span>';
+                    
+                    if (port) {
+                        try {
+                            await port.close();
+                        } catch (e) {
+                            log(`Gagal menutup port: ${e.message}`, 'error');
+                        }
+                        port = null;
+                    }
+                }
+            }
+
+            async function disconnect() {
+                try {
+                    log('Memutuskan koneksi...', 'info');
+                    connectBtn.disabled = true;
+                    
+                    if (port) {
+                        await port.close();
+                        port = null;
+                    }
+                    
+                    // Update status
+                    isConnected = false;
+                    statusIndicator.classList.remove('connected');
+                    statusText.textContent = 'Disconnected';
+                    
+                    // Disable buttons
+                    flashBtn.disabled = true;
+                    rebootBtn.disabled = true;
+                    eraseFlashBtn.disabled = true;
+                    detectChipBtn.disabled = true;
+                    
+                    // Update connect button
+                    connectBtn.disabled = false;
+                    connectBtn.innerHTML = '<i class="fas fa-link"></i> <span>Connect</span>';
+                    connectBtn.classList.remove('btn-danger');
+                    connectBtn.classList.add('btn-success');
+                    
+                    log('Koneksi terputus', 'info');
+                } catch (error) {
+                    log(`Gagal memutuskan koneksi: ${error.message}`, 'error');
+                    connectBtn.disabled = false;
+                }
+            }
+
+            // Firmware functions
+            function validateFirmwareFile() {
+                if (firmwareFile.files.length > 0) {
+                    const file = firmwareFile.files[0];
+                    if (file.name.endsWith('.bin')) {
+                        log(`File firmware dipilih: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`, 'success');
+                        flashBtn.disabled = !isConnected;
+                    } else {
+                        log('File harus berekstensi .bin', 'error');
+                        flashBtn.disabled = true;
+                    }
+                } else {
+                    flashBtn.disabled = true;
+                }
+            }
+
+            async function flashFirmware() {
+                if (!isConnected || !firmwareFile.files.length || isFlashing) return;
+                
+                try {
+                    isFlashing = true;
+                    statusIndicator.classList.add('flashing');
+                    statusText.textContent = 'Flashing...';
+                    flashBtn.disabled = true;
+                    progressContainer.style.display = 'block';
+                    
+                    const file = firmwareFile.files[0];
+                    const address = parseInt(flashAddress.value, 16);
+                    
+                    log(`Memulai proses flashing firmware: ${file.name} ke alamat 0x${address.toString(16)}`, 'info');
+                    
+                    const fileBuffer = await file.arrayBuffer();
+                    const fileData = new Uint8Array(fileBuffer);
+                    
+                    // Flash progress callback
+                    const progressCallback = (progress) => {
+                        const percent = Math.round(progress * 100);
+                        progressBar.style.width = `${percent}%`;
+                        progressText.textContent = `${percent}%`;
+                    };
+                    
+                    // Flash firmware
+                    await espLoader.flashData(fileData, address, progressCallback);
+                    
+                    log('Firmware berhasil diupload!', 'success');
+                    log('Perangkat akan direboot otomatis...', 'info');
+                    
+                    // Auto-reboot
+                    await espLoader.hardReset();
+                    
+                    log('Perangkat telah direboot', 'success');
+                } catch (error) {
+                    log(`Gagal mengupload firmware: ${error.message}`, 'error');
+                } finally {
+                    isFlashing = false;
+                    statusIndicator.classList.remove('flashing');
+                    statusText.textContent = 'Connected';
+                    flashBtn.disabled = false;
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                    progressText.textContent = '0%';
+                }
+            }
+
+            async function rebootDevice() {
+                if (!isConnected) return;
+                
+                try {
+                    log('Mereboot perangkat...', 'info');
+                    rebootBtn.disabled = true;
+                    rebootBtn.innerHTML = '<div class="loading"></div> <span>Rebooting...</span>';
+                    
+                    await espLoader.hardReset();
+                    
+                    log('Perangkat berhasil direboot', 'success');
+                } catch (error) {
+                    log(`Gagal mereboot perangkat: ${error.message}`, 'error');
+                } finally {
+                    rebootBtn.disabled = false;
+                    rebootBtn.innerHTML = '<i class="fas fa-power-off"></i> <span>Reboot</span>';
+                }
+            }
+
+            async function eraseFlash() {
+                if (!isConnected) return;
+                
+                if (!confirm('Apakah Anda yakin ingin menghapus semua data flash? Ini akan mengembalikan perangkat ke pengaturan pabrik.')) {
+                    return;
+                }
+                
+                try {
+                    log('Memulai penghapusan flash...', 'warning');
+                    eraseFlashBtn.disabled = true;
+                    eraseFlashBtn.innerHTML = '<div class="loading"></div> <span>Menghapus...</span>';
+                    progressContainer.style.display = 'block';
+                    
+                    // Erase progress callback
+                    const progressCallback = (progress) => {
+                        const percent = Math.round(progress * 100);
+                        progressBar.style.width = `${percent}%`;
+                        progressText.textContent = `${percent}%`;
+                    };
+                    
+                    // Erase flash
+                    await espLoader.eraseFlash(progressCallback);
+                    
+                    log('Flash berhasil dihapus!', 'success');
+                    log('Perangkat akan direboot otomatis...', 'info');
+                    
+                    // Auto-reboot
+                    await espLoader.hardReset();
+                    
+                    log('Perangkat telah direboot', 'success');
+                } catch (error) {
+                    log(`Gagal menghapus flash: ${error.message}`, 'error');
+                } finally {
+                    eraseFlashBtn.disabled = false;
+                    eraseFlashBtn.innerHTML = '<i class="fas fa-trash-alt"></i> <span>Hapus Semua Data</span>';
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                    progressText.textContent = '0%';
+                }
+            }
+
+            async function detectChip() {
+                if (!isConnected) return;
+                
+                try {
+                    log('Mendeteksi chip ESP...', 'info');
+                    detectChipBtn.disabled = true;
+                    detectChipBtn.innerHTML = '<div class="loading"></div> <span>Mendeteksi...</span>';
+                    
+                    const detectedChip = await espLoader.connect();
+                    log(`Chip terdeteksi: ${detectedChip.CHIP_NAME}`, 'success');
+                    log(`Ukuran flash: ${detectedChip.FLASH_SIZES[detectedChip.flash_size]}`, 'info');
+                    log(`Fitur chip: ${detectedChip.FEATURES.join(', ')}`, 'info');
+                } catch (error) {
+                    log(`Gagal mendeteksi chip: ${error.message}`, 'error');
+                } finally {
+                    detectChipBtn.disabled = false;
+                    detectChipBtn.innerHTML = '<i class="fas fa-search"></i> <span>Deteksi Chip</span>';
+                }
+            }
+
+            // Initial log
+            log('Aplikasi ESP Web Flasher siap digunakan', 'info');
+            log('Silakan hubungkan perangkat ESP Anda', 'info');
+        });
+    </script>
+</body>
+</html>
