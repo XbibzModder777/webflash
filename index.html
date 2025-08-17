@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My PWA</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="icons/icon-192x192.png">
+</head>
+<body>
+  <h1>Hello PWA!</h1>
+  
+  <script>
+    // ===== Inline Service Worker =====
+    if ('serviceWorker' in navigator) {
+      // Daftarkan Service Worker langsung dari kode (tanpa file .js terpisah)
+      navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+      }).then((registration) => {
+        console.log('Service Worker registered!');
+
+        // Tambahkan kode Service Worker di sini
+        registration.active.addEventListener('statechange', (event) => {
+          if (event.target.state === 'activated') {
+            console.log('Service Worker aktif dan siap!');
+          }
+        });
+      }).catch((err) => {
+        console.error('Gagal mendaftarkan Service Worker:', err);
+      });
+
+      // Isi Service Worker
+      const swScript = `
+        const CACHE_NAME = 'my-pwa-cache-v1';
+        const urlsToCache = [
+          '/',
+          '/index.html',
+          '/icons/icon-192x192.png'
+        ];
+
+        self.addEventListener('install', (event) => {
+          event.waitUntil(
+            caches.open(CACHE_NAME)
+              .then((cache) => cache.addAll(urlsToCache))
+          );
+        });
+
+        self.addEventListener('fetch', (event) => {
+          event.respondWith(
+            caches.match(event.request)
+              .then((response) => response || fetch(event.request))
+          );
+        });
+      `;
+
+      // Buat blob URL untuk Service Worker
+      const blob = new Blob([swScript], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(blob);
+
+      // Daftarkan Service Worker dari blob
+      navigator.serviceWorker.register(swUrl)
+        .then((reg) => console.log('Service Worker berjalan!'))
+        .catch((err) => console.error('Error:', err));
+    }
+  </script>
+</body>
+</html>
